@@ -499,17 +499,17 @@ static void readPacket(u_char *magic, const struct pcap_pkthdr *pkthdr, const u_
 static void instructions(char *command)
 {
   fprintf(stderr,"Usage: %s [-d device] [-C collectorIP] [-c collectorPort] [-s samplingRate] [-v] [-i ifIndex] [-S ifSpeed] [-A agentIP] [-a agentSubId] [-P] [-T] \n", command);
-  fprintf(stderr,"
-         -d device:  the interface to monitor, e.g 'eth0'
-    -C collectorIP:  the collector to send sFlow to
-   -s samplingRate:  1-in-N packet sampling
-                -v:  verbose - log output (-vv for more detail)
-        -i ifIndex:  override ifIndex number
-        -S ifSpeed:  override ifSpeed (e.g. 1000000000)
-        -A agentIP:  override sFlow agent address
-     -a agentSubId:  set sFlow agent subId
-                -P:  kick interface into promiscuous mode
-                -T:  test mode - include some made-up structs\n");
+  fprintf(stderr,"\
+         -d device:  the interface to monitor, e.g 'eth0'\
+    -C collectorIP:  the collector to send sFlow to\
+   -s samplingRate:  1-in-N packet sampling\
+                -v:  verbose - log output (-vv for more detail)\
+        -i ifIndex:  override ifIndex number\
+        -S ifSpeed:  override ifSpeed (e.g. 1000000000)\
+        -A agentIP:  override sFlow agent address\
+     -a agentSubId:  set sFlow agent subId\
+                -P:  kick interface into promiscuous mode\
+                -T:  test mode - include some made-up structs");
   exit(-3);
 }
 
