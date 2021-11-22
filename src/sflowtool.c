@@ -11,6 +11,7 @@ extern "C" {
 #include "config.h"
 #endif
 
+#include <pthread.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -6569,31 +6570,10 @@ static void process_command_line(int argc, char *argv[])
   -----------------___________________________------------------
 */
 
-int main(int argc, char *argv[])
-{
-  memset(&myflow, 0, sizeof(myflow));
-  map_init(&mymap);
-
+void* myfuc1(void* args){
   int32_t soc4=-1,soc6=-1;
 
-#ifdef _WIN32
-  WSADATA wsadata;
-  WSAStartup(0xffff, &wsadata);
-  /* TODO: supposed to call WSACleanup() on termination */
-#endif
-
-  /* read the command line */
-  process_command_line(argc, argv);
-
-#ifdef _WIN32
-  /* on windows we need to tell stdout if we want it to be binary */
-  if(sfConfig.outputFormat == SFLFMT_PCAP
-     || sfConfig.outputFormat == SFLFMT_PCAP_DISCARD)
-    setmode(1, O_BINARY);
-#endif
-
-  /* reading from file or socket? */
-  if(sfConfig.readPcapFileName) {
+    if(sfConfig.readPcapFileName) {
     if(strcmp(sfConfig.readPcapFileName, "-") == 0) sfConfig.readPcapFile = stdin;
     else sfConfig.readPcapFile = fopen(sfConfig.readPcapFileName, "rb");
     if(sfConfig.readPcapFile == NULL) {
@@ -6677,6 +6657,59 @@ int main(int argc, char *argv[])
       }
     }
   }
+  return NULL;
+}
+
+void* myfuc2(void* args){
+  struct timeval tv;
+  while(1){
+    const char *key;
+    map_iter_t iter = map_iter(&mymap);
+    while ((key = map_next(&mymap, &iter))) {
+      gettimeofday(&tv, NULL);
+      if (tv.tv_sec -  map_get(&mymap,key)->time_last.tv_sec >= 7)
+      {
+        double temp = tv.tv_sec -  map_get(&mymap,key)->time_last.tv_sec;
+        map_get(&mymap, key)->connection_bandwidth_now = 0.2*1024*1024;
+        printf("outtime调整(指): %s, 数据速率: %lfMb/s, 当前连接带宽: %lfMb/s, 距离上次采样时间: %fs\n", key, map_get(&mymap, key)->bandwidth/(1024*1024), 
+        map_get(&mymap, key)->connection_bandwidth_now/(1024*1024), temp);
+      }  
+    }
+  }
+  return NULL;
+}
+
+int main(int argc, char *argv[])
+{
+  memset(&myflow, 0, sizeof(myflow));
+  map_init(&mymap);
+
+  
+
+#ifdef _WIN32
+  WSADATA wsadata;
+  WSAStartup(0xffff, &wsadata);
+  /* TODO: supposed to call WSACleanup() on termination */
+#endif
+
+  /* read the command line */
+  process_command_line(argc, argv);
+
+#ifdef _WIN32
+  /* on windows we need to tell stdout if we want it to be binary */
+  if(sfConfig.outputFormat == SFLFMT_PCAP
+     || sfConfig.outputFormat == SFLFMT_PCAP_DISCARD)
+    setmode(1, O_BINARY);
+#endif
+  pthread_t th1;
+  pthread_t th2;
+
+  pthread_create(&th1, NULL, myfuc1, NULL);
+  pthread_create(&th2, NULL, myfuc2, NULL);
+
+  pthread_join(th1, NULL);
+  pthread_join(th2, NULL);
+
   return 0;
 }
 
