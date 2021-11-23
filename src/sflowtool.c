@@ -6670,6 +6670,8 @@ void* myfuc2(void* args){
       if (tv.tv_sec -  map_get(&mymap,key)->time_last.tv_sec >= 7)
       {
         double temp = tv.tv_sec -  map_get(&mymap,key)->time_last.tv_sec;
+	map_get(&mymap,key)->time_last.tv_sec = tv.tv_sec;
+	map_get(&mymap,key)->time_last.tv_usec = tv.tv_usec;
         map_get(&mymap, key)->connection_bandwidth_now = 0.2*1024*1024;
         printf("outtime调整(指): %s, 数据速率: %lfMb/s, 当前连接带宽: %lfMb/s, 距离上次采样时间: %fs\n", key, map_get(&mymap, key)->bandwidth/(1024*1024), 
         map_get(&mymap, key)->connection_bandwidth_now/(1024*1024), temp);
