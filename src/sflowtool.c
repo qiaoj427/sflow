@@ -1449,7 +1449,7 @@ static void writeFlowLine(SFSample *sample)
 					}
 					else //指数调整失败,尝试线性调整
 					{
-						if(map_get(&mymap, ip1)->connection_bandwidth_now + 0.2*1024*1024*(double)N <= total_bd)
+						if(map_get(&mymap, ip1)->connection_bandwidth_now + 0.2*1024*1024*(double)(N+1) <= total_bd)
 						{
 							LA(&map_get(&mymap, ip1)->connection_bandwidth_now, N+1, &map_get(&mymap, ip1)->num, ip1, map_get(&mymap, ip1)->bandwidth, temp);
 						}
@@ -1462,7 +1462,7 @@ static void writeFlowLine(SFSample *sample)
 				}
 				else //目标值 > 拥塞门限-->指数调整
 				{
-					if(map_get(&mymap, ip1)->connection_bandwidth_now + 0.2*1024*1024*(double)N <= total_bd)
+					if(map_get(&mymap, ip1)->connection_bandwidth_now + 0.2*1024*1024*(double)(N+1) <= total_bd)
 					{
 						LA(&map_get(&mymap, ip1)->connection_bandwidth_now, N+1, &map_get(&mymap, ip1)->num, ip1, map_get(&mymap, ip1)->bandwidth, temp);
 					}
@@ -1475,7 +1475,7 @@ static void writeFlowLine(SFSample *sample)
 			}
 			else //当前带宽超过拥塞门限->线性调整
 			{
-				if(map_get(&mymap, ip1)->connection_bandwidth_now + 0.2*1024*1024*(double)N <= total_bd)
+				if(map_get(&mymap, ip1)->connection_bandwidth_now + 0.2*1024*1024*(double)(N+1) <= total_bd)
 				{
 					LA(&map_get(&mymap, ip1)->connection_bandwidth_now, N+1, &map_get(&mymap, ip1)->num, ip1, map_get(&mymap, ip1)->bandwidth, temp);
 				}
@@ -1488,7 +1488,7 @@ static void writeFlowLine(SFSample *sample)
 		}
 		else
 		{
-			if(map_get(&mymap, ip1)->connection_bandwidth_now - 0.2*1024*1024*(double)N > 0.2*1024*1024)
+			if(map_get(&mymap, ip1)->connection_bandwidth_now - 0.2*1024*1024*(double)(N+1) > 0.2*1024*1024)
 			{
 				LA_decrease(&map_get(&mymap, ip1)->connection_bandwidth_now, N+1, &map_get(&mymap, ip1)->num, ip1, map_get(&mymap, ip1)->bandwidth, temp);
 			}
@@ -6669,11 +6669,11 @@ void* myfuc2(void* args){
       gettimeofday(&tv, NULL);
       if (tv.tv_sec -  map_get(&mymap,key)->time_last.tv_sec >= 7)
       {
-        double temp = tv.tv_sec -  map_get(&mymap,key)->time_last.tv_sec;
+        double temp = tv.tv_sec - map_get(&mymap,key)->time_last.tv_sec;
+        map_get(&mymap, key)->connection_bandwidth_now = 0.2*1024*1024;
 	map_get(&mymap,key)->time_last.tv_sec = tv.tv_sec;
 	map_get(&mymap,key)->time_last.tv_usec = tv.tv_usec;
-        map_get(&mymap, key)->connection_bandwidth_now = 0.2*1024*1024;
-        printf("outtime调整(指): %s, 数据速率: %lfMb/s, 当前连接带宽: %lfMb/s, 距离上次采样时间: %fs\n", key, map_get(&mymap, key)->bandwidth/(1024*1024), 
+        printf("timeout调整(指): %s, 数据速率: %lfMb/s, 当前连接带宽: %lfMb/s, 距离上次采样时间: %fs\n", key, map_get(&mymap, key)->bandwidth/(1024*1024), 
         map_get(&mymap, key)->connection_bandwidth_now/(1024*1024), temp);
       }  
     }
